@@ -1,4 +1,4 @@
-// File: /home/brenno/COMANDO-CLEAN/app/page.tsx
+// File: C:\Users\Fullstark\Documents\VSCode\comando-clean\Nova pasta\app\page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
