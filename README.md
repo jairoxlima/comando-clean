@@ -1,6 +1,6 @@
 # Comando Clean
 
-Website for Comando Clean cleaning services, inspired by Dr Lava Tudo.
+Website for Comando Clean cleaning services.
 
 ## Getting Started
 
