@@ -1,9 +1,13 @@
 'use client'
 
 export default function WhatsAppButton() {
+  const whatsappNumber = '5581999629352'
+  const message = 'Olá, gostaria de um orçamento!'
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
+
   return (
     <a
-      href="https://wa.me/5581999999999" // Substituir pelo número real
+      href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform hover:scale-110 active:scale-95"

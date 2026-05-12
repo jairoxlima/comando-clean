@@ -238,10 +238,6 @@ export default function Home() {
                   <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   Tratamento anti-alérgico premium
                 </li>
-                <li className="flex items-center gap-3 text-slate-700">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Descontos em tapetes e cortinas
-                </li>
               </ul>
               <Link href="/orcamento?plan=saude" className="block w-full text-center py-3 px-6 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-colors">
                 Escolher Plano Saúde

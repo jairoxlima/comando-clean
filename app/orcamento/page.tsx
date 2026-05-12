@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { savePedido } from '@/lib/pedidos'
 
 const categories = [
   { key: 'casa', label: 'Residencial' },
@@ -25,23 +26,22 @@ const planOptions = [
   { key: 'saude', label: 'Saúde Total', description: 'Tratamento intensivo anti-alérgico para casas com pets ou crianças.' },
 ]
 
-const whatsappNumber = '5581999629352'
-
 const quantityOptions = ['1', '2', '3', '4', '5', '6']
 const sofaModelOptions = [
-  { key: 'Retrátil', label: 'Sofá Retrátil', description: 'Modelo com assentos extensíveis, requer limpeza técnica em todas as articulações.' },
+  { key: 'Retrátil', label: 'Sofá Retrátil', description: 'O assento desliza para estender a profundidade. Requer limpeza em todas as articulações.' },
   { key: 'Sofá Comum', label: 'Sofá Comum', description: 'Modelo clássico fixo, foco em assentos, encostos e braços.' },
-  { key: 'Sofá de Canto', label: 'Sofá de Canto', description: 'Formato em L, maior área de superfície e junções complexas.' },
-  { key: 'Sofá com Chaise', label: 'Sofá com Chaise', description: 'Extensão fixa para relaxamento, exige atenção especial na base.' },
-  { key: 'Sofá-cama', label: 'Sofá-cama', description: 'Funcionalidade dupla, higienização completa do estofado e estrutura interna.' },
+  { key: 'Sofá de Canto', label: 'Sofá de Canto', description: 'Formato em L com maior área de superfície e junções complexas.' },
+  { key: 'Sofá com Chaise', label: 'Sofá com Chaise', description: 'Extensão fixa para relaxamento, atenção especial na base.' },
+  { key: 'Sofá-cama', label: 'Sofá-cama', description: 'Funcionalidade dupla, higienização do estofado e estrutura interna.' },
 ]
 
 const materialOptions = ['Tecido', 'Couro', 'Suede', 'Veludo']
+const automovelPartsOptions = ['Bancos', 'Teto', 'Bancos e Teto']
 const colchaoSizeOptions = [
-  { key: 'Solteiro', label: 'Solteiro' },
-  { key: 'Casal', label: 'Casal' },
-  { key: 'Queen', label: 'Queen' },
-  { key: 'King', label: 'King' },
+  { key: 'Solteiro', label: 'Solteiro', dimensions: '78 x 188 cm' },
+  { key: 'Casal', label: 'Casal', dimensions: '138 x 188 cm' },
+  { key: 'Queen', label: 'Queen', dimensions: '158 x 198 cm' },
+  { key: 'King', label: 'King', dimensions: '193 x 203 cm' },
 ]
 
 function OptionButton({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) {
@@ -69,10 +69,14 @@ function OrcamentoContent() {
   const [selectedMaterial, setSelectedMaterial] = useState('Tecido')
   const [colchaoSize, setColchaoSize] = useState('Solteiro')
   const [outrosDescription, setOutrosDescription] = useState('')
+  const [tapeteAltura, setTapeteAltura] = useState('')
+  const [tapeteLargura, setTapeteLargura] = useState('')
+  const [automovelParts, setAutomovelParts] = useState('Bancos')
   const [cartItems, setCartItems] = useState<{ key: string; label: string; quantity: number; details: string }[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState('unica')
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const activeService = serviceItems.find((item) => item.key === selectedItem)
 
@@ -87,24 +91,40 @@ function OrcamentoContent() {
     let message = 'Solicitação de Orçamento - Comando Clean\n\n'
     const planLabel = planOptions.find((option) => option.key === selectedPlan)?.label || 'Plano personalizado'
     message += `Plano: ${planLabel}\n\n`
-    
+
     cartItems.forEach((item, index) => {
       message += `${index + 1}. ${item.label}\n`
       message += item.details.split('\n').map(line => `- ${line}`).join('\n')
       message += `\nQuantidade: ${item.quantity}`
       message += '\n\n'
     })
-    
+
     message += 'Desejo receber um orçamento formal para estes itens.'
     return message
+  }
+
+  const handleSolicitarOrcamento = () => {
+    if (cartItems.length === 0) {
+      alert('Adicione pelo menos um item ao orçamento')
+      return
+    }
+
+    savePedido(selectedPlan, cartItems)
+    router.push('/meus-pedidos')
   }
 
   const getSelectedItemDetails = (itemKey: string) => {
     if (itemKey === 'sofa') {
       return `Lugares: ${selectedQuantity}\nModelo: ${selectedModel}\nMaterial: ${selectedMaterial}`
     }
+    if (itemKey === 'tapete') {
+      return `Altura: ${tapeteAltura}cm\nLargura: ${tapeteLargura}cm`
+    }
     if (itemKey === 'colchao') {
       return `Tamanho: ${colchaoSize}`
+    }
+    if (itemKey === 'automovel') {
+      return `Partes: ${automovelParts}\nMaterial: ${selectedMaterial}`
     }
     if (itemKey === 'outros') {
       return `${outrosDescription || 'Consultar especialista'}`
@@ -213,18 +233,73 @@ function OrcamentoContent() {
                  </>
                )}
 
+               {selectedItem === 'tapete' && (
+                 <div className="space-y-4">
+                   <div>
+                     <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-tighter">Altura (cm)</label>
+                     <input
+                       type="number"
+                       value={tapeteAltura}
+                       onChange={(e) => setTapeteAltura(e.target.value)}
+                       placeholder="Ex: 200"
+                       className="w-full p-3 rounded-xl border border-slate-200 bg-white outline-none focus:border-blue-500 transition-colors"
+                     />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-tighter">Largura (cm)</label>
+                     <input
+                       type="number"
+                       value={tapeteLargura}
+                       onChange={(e) => setTapeteLargura(e.target.value)}
+                       placeholder="Ex: 300"
+                       className="w-full p-3 rounded-xl border border-slate-200 bg-white outline-none focus:border-blue-500 transition-colors"
+                     />
+                   </div>
+                 </div>
+               )}
+
+               {selectedItem === 'automovel' && (
+                 <>
+                   <div>
+                     <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-tighter">Partes do Automóvel</h3>
+                     <div className="flex flex-wrap gap-2">
+                       {automovelPartsOptions.map((part) => (
+                         <OptionButton key={part} label={part} selected={automovelParts === part} onClick={() => setAutomovelParts(part)} />
+                       ))}
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-tighter">Tipo de Material</h3>
+                     <div className="flex flex-wrap gap-2">
+                       {['Tecido', 'Couro'].map((m) => (
+                         <OptionButton key={m} label={m} selected={selectedMaterial === m} onClick={() => setSelectedMaterial(m)} />
+                       ))}
+                     </div>
+                   </div>
+                 </>
+               )}
+
                {selectedItem === 'colchao' && (
                  <div>
                    <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-tighter">Dimensões</h3>
-                   <div className="flex flex-wrap gap-2">
+                   <div className="grid md:grid-cols-2 gap-3">
                      {colchaoSizeOptions.map((s) => (
-                       <OptionButton key={s.key} label={s.label} selected={colchaoSize === s.key} onClick={() => setColchaoSize(s.key)} />
+                       <button
+                         key={s.key}
+                         onClick={() => setColchaoSize(s.key)}
+                         className={`p-4 rounded-xl border text-left transition-all ${
+                           colchaoSize === s.key ? 'border-blue-600 bg-white shadow-sm' : 'border-slate-200 bg-transparent hover:border-slate-300'
+                         }`}
+                       >
+                         <p className="font-bold text-sm mb-1">{s.label}</p>
+                         <p className="text-xs text-slate-500">{s.dimensions}</p>
+                       </button>
                      ))}
                    </div>
                  </div>
                )}
 
-               {selectedItem !== 'outros' && (
+               {selectedItem !== 'outros' && selectedItem !== 'tapete' && selectedItem !== 'colchao' && selectedItem !== 'automovel' && (
                  <div>
                    <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-tighter">Tipo de Material</h3>
                    <div className="flex flex-wrap gap-2">
@@ -287,13 +362,12 @@ function OrcamentoContent() {
                      <span className="text-slate-400">Plano Selecionado:</span>
                      <span className="font-bold">{planOptions.find(p => p.key === selectedPlan)?.label}</span>
                    </div>
-                   <a
-                     href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(generateWhatsAppMessage())}`}
-                     target="_blank"
+                   <button
+                     onClick={handleSolicitarOrcamento}
                      className="block w-full py-4 bg-emerald-500 text-slate-950 text-center rounded-xl font-bold hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/10"
                    >
                      Solicitar via WhatsApp
-                   </a>
+                   </button>
                    <p className="text-[10px] text-center text-slate-500 mt-4 uppercase tracking-widest">Atendimento Profissional em Recife</p>
                 </div>
               </div>
