@@ -1,6 +1,3 @@
 {
-  "/not-found": "app/not-found.js",
-  "/page": "app/page.js",
-  "/orcamento/page": "app/orcamento/page.js",
-  "/resumo/page": "app/resumo/page.js"
+  "/orcamento/page": "app/orcamento/page.js"
 }
