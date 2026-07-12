@@ -29,7 +29,7 @@ export default function Testimonials() {
                   <span key={i} className="text-yellow-400">★</span>
                 ))}
               </div>
-              <p className="text-gray-600 mb-4 italic">"{testimonial.text}"</p>
+              <p className="text-gray-600 mb-4 italic">&quot;{testimonial.text}&quot;</p>
               <p className="font-semibold">{testimonial.name}</p>
             </div>
           ))}
